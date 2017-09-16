@@ -183,10 +183,10 @@
 		},
 		{
 			"importpath": "github.com/xenolf/lego/acme",
-			"repository": "https://github.com/xenolf/lego",
+			"repository": "https://github.com/benizi/lego",
 			"vcs": "git",
-			"revision": "4dde48a9b9916926a8dd4f69639c8dba40930355",
-			"branch": "master",
+			"revision": "ce89bdd7364cae12512979edca18cbb51763b4bf",
+			"branch": "add-extra-ca-cert-file",
 			"path": "/acme",
 			"notests": true
 		},
