@@ -98,8 +98,16 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 			}
 		}
 
-		// These criteria work well in this order for PHP sites
-		if !h.exists(fpath) || fpath[len(fpath)-1] == '/' || strings.HasSuffix(fpath, rule.Ext) {
+		docURI, _ := rule.splitPathInfo(fpath)
+
+		// If request path extension is invalid, ignore request.
+		if !rule.matchExt(docURI) {
+			continue
+		}
+
+		// Either the file (without PATH_INFO) must exist, or the path must
+		// look like a directory.
+		if h.exists(docURI) || fpath[len(fpath)-1] == '/' {
 
 			// Create environment for CGI script
 			env, err := h.buildEnv(r, rule, fpath)
@@ -449,6 +457,11 @@ func (r Rule) splitPos(path string) int {
 		return strings.Index(path, r.SplitPath)
 	}
 	return strings.Index(strings.ToLower(path), strings.ToLower(r.SplitPath))
+}
+
+// matchExt checks if path ends with Ext.
+func (r Rule) matchExt(path string) bool {
+	return strings.HasSuffix(path, r.Ext)
 }
 
 // AllowedPath checks if requestPath is not an ignored path.
