@@ -71,10 +71,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 				continue
 			}
 		}
-		// The path must also be allowed (not ignored).
-		if !rule.AllowedPath(r.URL.Path) {
-			continue
-		}
 
 		// In addition to matching the path, a request must meet some
 		// other criteria before being proxied as FastCGI. For example,
@@ -82,6 +78,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 		// but we also want to be flexible for the script we proxy to.
 
 		fpath := r.URL.Path
+
+		// The path must be allowed (not ignored).
+		if !rule.AllowedPath(fpath) {
+			continue
+		}
 
 		if idx, ok := httpserver.IndexFile(h.FileSys, fpath, rule.IndexFiles); ok {
 			fpath = idx
@@ -102,6 +103,11 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) 
 
 		// If request path extension is invalid, ignore request.
 		if !rule.matchExt(docURI) {
+			continue
+		}
+
+		// The path must still be allowed after PATH_INFO is stripped.
+		if !rule.AllowedPath(docURI) {
 			continue
 		}
 
