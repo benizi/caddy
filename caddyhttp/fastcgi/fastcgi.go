@@ -256,12 +256,8 @@ func (h Handler) buildEnv(r *http.Request, rule Rule, fpath string) (map[string]
 	ip = strings.Replace(ip, "]", "", 1)
 
 	// Split path in preparation for env variables.
-	// Previous rule.canSplit checks ensure this can never be -1.
-	splitPos := rule.splitPos(fpath)
-
-	// Request has the extension; path was split successfully
-	docURI := fpath[:splitPos+len(rule.SplitPath)]
-	pathInfo := fpath[splitPos+len(rule.SplitPath):]
+	// Previous rule.canSplit check ensures this will succeed.
+	docURI, pathInfo := rule.splitPathInfo(fpath)
 	scriptName := fpath
 	scriptFilename := absPath
 
@@ -431,6 +427,19 @@ func (s *srv) Address() (string, error) {
 // canSplit checks if path can split into two based on rule.SplitPath.
 func (r Rule) canSplit(path string) bool {
 	return r.splitPos(path) >= 0
+}
+
+// splitPathInfo splits the path into DOCUMENT_URI and PATH_INFO, if present.
+func (r Rule) splitPathInfo(path string) (string, string) {
+	if r.SplitPath == "" {
+		return path, ""
+	}
+
+	splitPos := r.splitPos(path)
+	// Request has the extension; path was split successfully
+	docURI := path[:splitPos+len(r.SplitPath)]
+	pathInfo := path[splitPos+len(r.SplitPath):]
+	return docURI, pathInfo
 }
 
 // splitPos returns the index where path should be split
